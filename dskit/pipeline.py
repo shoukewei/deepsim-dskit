@@ -1,9 +1,7 @@
 # modules/pipeline.py
 
-import json
 import pickle
 import pandas as pd
-import numpy as np
 from pathlib import Path
 from sklearn.model_selection import train_test_split
 from dskit.preprocessing import (
@@ -491,13 +489,13 @@ def run_full_pipeline(config: dict) -> dict:
     out_cfg = config["output"]
 
     # --- Logger ---
-    Path(out_cfg["logs_dir"]).mkdir(
+    Path(out_cfg.get("logs_dir", "logs")).mkdir(
         parents=True,
         exist_ok=True
     )
     logger = RunLogger(
         exp_id,
-        log_file=f"{out_cfg['logs_dir']}/{exp_id}.jsonl"
+        log_file=f"{out_cfg.get('logs_dir', 'logs')}/{exp_id}.jsonl"
     )
     logger.log("pipeline_started", {
         "experiment_id": exp_id,
@@ -517,10 +515,15 @@ def run_full_pipeline(config: dict) -> dict:
         # ── Step 2: Load data ────────────────────────────────────
         print("\n[2/9] Loading data...")
         data_cfg = config["data"]
+        # Honour `read_kwargs` from config if provided; otherwise fall back to
+        # a top-level `index_col` (or 0 for backwards compatibility).
+        read_kwargs = dict(data_cfg.get("read_kwargs") or {})
+        if "index_col" not in read_kwargs:
+            read_kwargs["index_col"] = data_cfg.get("index_col", 0)
         df = load_dataset(
             data_cfg["path"],
-            index_col=data_cfg.get("index_col", 0),
             required_columns=data_cfg.get("required_columns"),
+            **read_kwargs,
         )
         logger.log("data_loaded", {
             "rows": len(df), "columns": list(df.columns),
@@ -636,7 +639,7 @@ def run_full_pipeline(config: dict) -> dict:
             "best_model":      best_name,
             "best_val_r2":     float(results.iloc[0]["r2"]),
         })
-        print(f"\n      Model comparison (validation set):")
+        print("\n      Model comparison (validation set):")
         print(results[["model", "r2", "rmse"]].to_string(index=False))
         print(f"\n      Best model: {best_name}")
 
@@ -656,12 +659,13 @@ def run_full_pipeline(config: dict) -> dict:
                              if k != "label"}}
 
         logger.log("final_evaluation", all_metrics)
-        print(f"      Test R²:   {test_metrics['r2']}")
+        print(f"      Test R^2: {test_metrics['r2']}")
         print(f"      Test RMSE: {test_metrics['rmse']}")
         print(f"      Test MAE:  {test_metrics['mae']}")
 
         # ── Step 9: Save, register, promote ─────────────────────
         print("\n[9/9] Saving artifacts and registering experiment...")
+        exp_base_dir = out_cfg.get("experiments_dir", "experiments")
         artifact_dir = save_experiment(
             experiment_id=exp_id,
             model=best_model,
@@ -669,15 +673,15 @@ def run_full_pipeline(config: dict) -> dict:
             features=list(X_train_full_clean.columns),
             config=config,
             metrics=all_metrics,
-            base_dir=out_cfg["experiments_dir"],
+            base_dir=exp_base_dir,
             notes=config.get("notes", ""),
         )
 
-        exp_registry = ExperimentRegistry(out_cfg["registry_path"])
+        exp_registry = ExperimentRegistry(out_cfg.get("registry_path", "registry/experiments.json"))
         exp_registry.register(artifact_dir)
         promote_experiment(exp_id, exp_registry,
-                           production_dir=out_cfg["production_dir"],
-                           base_dir=out_cfg["experiments_dir"])
+                           production_dir=out_cfg.get("production_dir", "production"),
+                           base_dir=exp_base_dir)
 
         logger.log("pipeline_complete", {
             "status":       "success",
@@ -688,7 +692,7 @@ def run_full_pipeline(config: dict) -> dict:
         print(f"\n{'='*60}")
         print(f"  PIPELINE COMPLETE — {exp_id}")
         print(f"  Best model:  {best_name}")
-        print(f"  Test R²:     {test_metrics['r2']}")
+        print(f"  Test R^2:    {test_metrics['r2']}")
         print(f"  Artifact:    {artifact_dir}")
         print(f"{'='*60}\n")
 

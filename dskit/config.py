@@ -545,7 +545,7 @@ def validate_config(config: dict) -> List[str]:
         multiplier = outlier_cfg.get("multiplier", 1.5)
         if not isinstance(multiplier, (int, float)) or multiplier <= 0:
             errors.append(
-                f"'preprocessing.outliers.multiplier' must be a positive number"
+                "'preprocessing.outliers.multiplier' must be a positive number"
             )
 
     # --- Models section ---

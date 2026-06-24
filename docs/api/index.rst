@@ -6,6 +6,5 @@ API Reference
 
    dskit.config
    dskit.data_io
-   dskit.framework
    dskit.pipeline
    dskit.reproducibility

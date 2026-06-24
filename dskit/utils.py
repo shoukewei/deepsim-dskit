@@ -10,7 +10,6 @@ module the safe foundation that everything else can import from.
 import json
 import hashlib
 import logging
-import os
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Union

@@ -488,19 +488,11 @@ toml = [
 ]
 
 [[package]]
-name = "distlib"
-version = "0.4.2"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/46/8d/873e9252ea2c0e0c857884e0a2899ec43ade132345df1925ef24cbe64f18/distlib-0.4.2.tar.gz", hash = "sha256:baeb401c90f27acd15c4861ae0847d1e731c27ac3dbf4210643ba61fa1e813db", size = 614914, upload-time = "2026-06-08T16:24:15.439Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/c1/60/aa891c893821d4d127292ed66c6940d1d715894bd5a0ce048056bc641773/distlib-0.4.2-py2.py3-none-any.whl", hash = "sha256:ca4cb11e5d746b5ec13c199cbf19ae27a241f89702b54e153a74332955446067", size = 470510, upload-time = "2026-06-08T16:24:13.208Z" },
-]
-
-[[package]]
-name = "dskit"
+name = "deepsim-dskit"
 version = "1.0.0"
 source = { editable = "." }
 dependencies = [
+    { name = "descripstats" },
     { name = "joblib" },
     { name = "numpy", version = "2.0.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.10'" },
     { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version == '3.10.*'" },
@@ -554,23 +546,56 @@ yaml = [
 
 [package.metadata]
 requires-dist = [
+    { name = "black", marker = "extra == 'all'", specifier = ">=23.0" },
     { name = "black", marker = "extra == 'dev'", specifier = ">=23.0" },
-    { name = "dskit", extras = ["polars", "yaml", "dev"], marker = "extra == 'all'" },
+    { name = "descripstats", specifier = ">=0.1.1" },
     { name = "joblib", specifier = ">=1.2" },
+    { name = "mypy", marker = "extra == 'all'", specifier = ">=1.0" },
     { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.0" },
     { name = "numpy", specifier = ">=1.20" },
     { name = "pandas", specifier = ">=1.5" },
+    { name = "polars", marker = "extra == 'all'", specifier = ">=0.18" },
     { name = "polars", marker = "extra == 'polars'", specifier = ">=0.18" },
+    { name = "pre-commit", marker = "extra == 'all'", specifier = ">=3.0" },
     { name = "pre-commit", marker = "extra == 'dev'", specifier = ">=3.0" },
+    { name = "pytest", marker = "extra == 'all'", specifier = ">=7.0" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=7.0" },
+    { name = "pytest-cov", marker = "extra == 'all'", specifier = ">=4.0" },
     { name = "pytest-cov", marker = "extra == 'dev'", specifier = ">=4.0" },
+    { name = "pyyaml", marker = "extra == 'all'", specifier = ">=6.0" },
     { name = "pyyaml", marker = "extra == 'yaml'", specifier = ">=6.0" },
+    { name = "ruff", marker = "extra == 'all'", specifier = ">=0.1" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.1" },
     { name = "scikit-learn", specifier = ">=1.0" },
     { name = "scipy", specifier = ">=1.7" },
     { name = "statsmodels", specifier = ">=0.13" },
 ]
 provides-extras = ["polars", "yaml", "image", "dev", "all"]
+
+[[package]]
+name = "descripstats"
+version = "0.1.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "numpy", version = "2.0.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.10'" },
+    { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version == '3.10.*'" },
+    { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
+    { name = "pandas", version = "2.3.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
+    { name = "pandas", version = "3.0.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/18/67/c5c1d04f2f663e062b32645ac6e155c68ee68290d7c5f3bda38f1eec27e5/descripstats-0.1.1.tar.gz", hash = "sha256:c8ba6003f918e2c4c922907dfc9a0cbaf8f08154867fc69292933bfd733b5430", size = 4267, upload-time = "2026-06-04T06:13:04.731Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/6b/73/691c5b1f7fbe8522b91f467e15ec01146304dd7d47286392d36093766e2d/descripstats-0.1.1-py3-none-any.whl", hash = "sha256:626da74a6527cca09f2fb6e8ae29653fd380ae73de9d39a86bc4dc9306573ddf", size = 4019, upload-time = "2026-06-04T06:13:03.697Z" },
+]
+
+[[package]]
+name = "distlib"
+version = "0.4.2"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/46/8d/873e9252ea2c0e0c857884e0a2899ec43ade132345df1925ef24cbe64f18/distlib-0.4.2.tar.gz", hash = "sha256:baeb401c90f27acd15c4861ae0847d1e731c27ac3dbf4210643ba61fa1e813db", size = 614914, upload-time = "2026-06-08T16:24:15.439Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/c1/60/aa891c893821d4d127292ed66c6940d1d715894bd5a0ce048056bc641773/distlib-0.4.2-py2.py3-none-any.whl", hash = "sha256:ca4cb11e5d746b5ec13c199cbf19ae27a241f89702b54e153a74332955446067", size = 470510, upload-time = "2026-06-08T16:24:13.208Z" },
+]
 
 [[package]]
 name = "exceptiongroup"

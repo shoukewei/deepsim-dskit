@@ -165,7 +165,7 @@ class Toolkit:
         errors = validate_config(active_config)
         if errors:
             raise ValueError(
-                f"Invalid configuration:\n" + "\n".join(f"  - {e}" for e in errors)
+                "Invalid configuration:\n" + "\n".join(f"  - {e}" for e in errors)
             )
         return run_experiment(active_config)
 

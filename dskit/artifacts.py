@@ -114,7 +114,7 @@ def save_experiment(
     with open(exp_dir / "metadata.json", "w") as f:
         json.dump(metadata, f, indent=2)
 
-    print(f"Saved experiment '{experiment_id}' → '{exp_dir}'")
+    print(f"Saved experiment '{experiment_id}' -> '{exp_dir}'")
     return str(exp_dir)
 
 
@@ -262,7 +262,7 @@ def archive_experiment(
     shutil.move(str(src), str(dest))
     registry.update_status(experiment_id, "archived")
 
-    print(f"Archived '{experiment_id}' → '{dest}'")
+    print(f"Archived '{experiment_id}' -> '{dest}'")
 
 
 class ExperimentRegistry:
@@ -483,6 +483,6 @@ class ExperimentRegistry:
             if exp["experiment_id"] == experiment_id:
                 exp["status"] = status
                 self._save_registry()
-                print(f"Updated '{experiment_id}' → status='{status}'")
+                print(f"Updated '{experiment_id}' -> status='{status}'")
                 return self
         raise ValueError(f"Experiment '{experiment_id}' not found in registry.")

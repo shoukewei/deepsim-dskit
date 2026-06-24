@@ -4,6 +4,7 @@ import json
 import os
 import random
 from pathlib import Path
+import joblib
 import pandas as pd
 import numpy as np
 from datetime import datetime
@@ -115,7 +116,6 @@ class RunLogger:
         level : str, optional
             Log level: 'INFO', 'WARNING', or 'ERROR'. Default is 'INFO'.
         """
-        from datetime import datetime
         entry = {
             "timestamp":     datetime.now().isoformat(),
             "experiment_id": self.experiment_id,
@@ -184,7 +184,12 @@ def run_experiment(config: dict, base_dir: str = "experiments") -> dict:
 
     # 2. Load data
     data_cfg = config["data"]
-    df = pd.read_csv(data_cfg["url"], index_col=0)
+    # Honour `read_kwargs` from config if present (matches pipeline.run_full_pipeline).
+    read_kwargs = dict(data_cfg.get("read_kwargs") or {})
+    if "index_col" not in read_kwargs:
+        read_kwargs["index_col"] = data_cfg.get("index_col", 0)
+    csv_path = data_cfg.get("path") or data_cfg.get("url")
+    df = pd.read_csv(csv_path, **read_kwargs)
     target = data_cfg["target"]
     X = df.drop(columns=[target])
     y = df[target]
@@ -245,7 +250,7 @@ def run_experiment(config: dict, base_dir: str = "experiments") -> dict:
 
     metrics = {**_metrics(X_train_scaled, y_train, "train"),
                **_metrics(X_test_scaled,  y_test,  "test")}
-    print(f"Test R²: {metrics['test_r2']}  |  RMSE: {metrics['test_rmse']}")
+    print(f"Test R^2: {metrics['test_r2']}  |  RMSE: {metrics['test_rmse']}")
 
     # 7. Save
     output_cfg = config.get("output", {})
@@ -265,7 +270,6 @@ def run_experiment(config: dict, base_dir: str = "experiments") -> dict:
     with open(exp_dir / "metrics.json", "w") as f:
         json.dump(metrics, f, indent=2)
 
-    from datetime import datetime
     metadata = {
         "experiment_id": exp_id,
         "model_class": type(best_model).__name__,
@@ -328,9 +332,13 @@ def run_experiment_logged(
 
     # 2. Load data
     data_cfg = config["data"]
-    df = pd.read_csv(data_cfg["url"], index_col=0)
+    # Honour `read_kwargs` from config if present (matches pipeline.run_full_pipeline).
+    read_kwargs = data_cfg.get("read_kwargs") or {}
+    csv_path = data_cfg.get("path") or data_cfg.get("url")
+    index_col = read_kwargs.get("index_col", data_cfg.get("index_col", 0))
+    df = pd.read_csv(csv_path, index_col=index_col)
     logger.log("data_loaded", {
-        "rows": len(df), "columns": list(df.columns), "url": data_cfg["url"]
+        "rows": len(df), "columns": list(df.columns), "path": csv_path
     })
 
     # Check for missing values
@@ -369,11 +377,11 @@ def run_experiment_logged(
     })
 
     # 5. Train
-    model = instantiate_model(config["model"])
-    model.fit(X_train_sc, y_train)
+    best_model = instantiate_model(config["model"])
+    best_model.fit(X_train_sc, y_train)
     logger.log("model_trained", {
-        "model_class":  type(model).__name__,
-        "model_params": {k: str(v) for k, v in model.get_params().items()},
+        "model_class":  type(best_model).__name__,
+        "model_params": {k: str(v) for k, v in best_model.get_params().items()},
     })
 
     # 6. Evaluate
@@ -390,24 +398,21 @@ def run_experiment_logged(
     logger.log("evaluation_complete", metrics)
 
     # 7. Save artifacts
-    import joblib
-    from datetime import datetime
-
     output_cfg = config.get("output", {})
     exp_base_dir = output_cfg.get("experiments_dir", base_dir)
-    
+
     exp_dir = Path(exp_base_dir) / exp_id
     exp_dir.mkdir(parents=True, exist_ok=True)
 
-    joblib.dump(best_model,  exp_dir / "model.joblib",    compress=3)
-    joblib.dump(scaler, exp_dir / "pipeline.joblib", compress=3)
+    joblib.dump(best_model, exp_dir / "model.joblib",    compress=3)
+    joblib.dump(scaler,      exp_dir / "pipeline.joblib", compress=3)
 
     for fname, data in [
         ("features.json", {"features": scaling_cols}),
         ("config.json",   config),
         ("metrics.json",  metrics),
         ("metadata.json", {
-            "experiment_id": exp_id, "model_class": type(model).__name__,
+            "experiment_id": exp_id, "model_class": type(best_model).__name__,
             "trained_at": datetime.now().isoformat(),
             "seed": seed, "notes": config.get("notes", ""), "status": "active",
         }),

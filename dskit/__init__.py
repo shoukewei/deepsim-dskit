@@ -189,8 +189,6 @@ __all__ = [
     # Performance
     "timer", "memory_profile", "optimize_dtypes", "memory_report",
     "process_in_chunks", "parallel_standardize", "PipelineCache",
-    # Pipeline
-    "run_full_pipeline",
     # Meta
     "__version__", "__author__",
 ]
