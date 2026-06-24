@@ -9,6 +9,9 @@ on:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    environment: pypi   # Optional: gate the publish job behind a GitHub environment
+    permissions:
+      id-token: write   # Required for PyPI Trusted Publishing (OIDC)
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v4
@@ -18,5 +21,5 @@ jobs:
       - run: python -m build
       - run: twine check dist/*
       - uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          password: ${{ secrets.PYPI_API_TOKEN }}
+        # No password: uses OIDC (Trusted Publishing) configured at
+        # https://pypi.org/manage/project/deepsim-dskit/settings/publishing/
